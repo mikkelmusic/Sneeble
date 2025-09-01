@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SneebleScope — Kids Zodiac (Offline, Big Image)</title>
+<style>
+  :root { --bg1:#eff6ff; --bg2:#f5f3ff; --ink:#0f172a; --card:#ffffff; --muted:#64748b; --accent:#7c3aed; --accent2:#2563eb; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, 'Apple Color Emoji','Segoe UI Emoji'; color:var(--ink);
+         background: linear-gradient(180deg, var(--bg1), var(--bg2)); }
+  .container { max-width: 1100px; margin: 0 auto; padding: 24px; }
+  header { display:flex; align-items:center; justify-content:space-between; padding: 24px 0; }
+  h1 { margin:0; font-size: 28px; font-weight: 800; letter-spacing: -0.02em; }
+  .card { background: rgba(255,255,255,.9); border:1px solid #e2e8f0; border-radius: 16px; padding: 20px; box-shadow: 0 10px 20px rgba(2,6,23,.05); }
+  .grid { display:grid; gap:16px; }
+  .grid-2 { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .grid-3 { grid-template-columns: repeat(3, minmax(0,1fr)); }
+  label { font-size: 13px; color: var(--muted); display:block; margin-bottom: 6px; }
+  input[type=number], input[type=date] { width:100%; padding:12px 14px; border-radius: 12px; border:1px solid #cbd5e1; font-size: 14px; }
+  .pill { display:inline-flex; align-items:center; gap:8px; background: var(--accent); color:#fff; padding: 10px 14px; border-radius: 999px; font-weight: 700; }
+  .btn { display:inline-flex; align-items:center; gap:8px; background: var(--accent2); color:#fff; padding: 10px 14px; border-radius: 12px; font-weight: 700; border:0; cursor:pointer; }
+  .btn-ghost { background:#fff; color:var(--ink); border:1px solid #cbd5e1; }
+  textarea { width:100%; padding: 10px 12px; border-radius: 10px; border:1px solid #cbd5e1; font-size:14px; resize:vertical; min-height: 84px; }
+  .row { display:flex; gap:16px; align-items:flex-end; }
+  .row > div { flex:1; }
+  .muted { color: var(--muted); font-size: 12px; }
+  .title { font-size: 20px; font-weight: 800; margin: 0 0 8px; }
+  .sign-card { border:1px solid #e2e8f0; background:#fff; border-radius: 14px; padding: 14px; }
+  .sign-head { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom: 8px; }
+  .sign-name { display:flex; align-items:center; gap:8px; font-size: 16px; font-weight: 700; }
+  .sign-name img { width:28px; height:28px; object-fit:contain; }
+  .traits { font-size: 12px; color: var(--muted); max-width: 60%; text-align:right; }
+  footer { padding: 24px 0; font-size: 12px; color: var(--muted); }
+  /* Big image area */
+  #traitsRow { text-align:center; display:none; margin-top: 24px; }
+  #signImage { width: 380px; height: 380px; object-fit: contain; border-radius: 28px; border: 3px solid #e2e8f0; background:#fff; box-shadow:0 10px 24px rgba(0,0,0,0.15); }
+  #sneebleName { margin-top: 18px; font-size: 30px; font-weight: 900; letter-spacing: -0.02em; }
+  #traitsText { margin: 12px auto 0; font-size: 18px; line-height: 1.65; max-width: 720px; }
+  @media (max-width: 820px) { #signImage{width: 300px; height:300px;} .grid-3{grid-template-columns:1fr;} .traits{display:none;} }
+</style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>SneebleScope</h1>
+      <div class="muted">Kid‑friendly zodiac fun ✨ (offline build · big image)</div>
+    </header>
+
+    <main class="grid" style="gap:20px; padding-bottom: 40px;">
+      <section class="card">
+        <div class="title">Find Your Sneeble</div>
+        <div class="row">
+          <div>
+            <label>Year of birth</label>
+            <input id="yearInput" type="number" inputmode="numeric" placeholder="e.g., 2012" value="2015" />
+          </div>
+          <div style="flex:0 0 auto;">
+            <div id="sneeblePill" class="pill">—</div>
+          </div>
+        </div>
+
+        <!-- Big, centered image + name + traits -->
+        <div id="traitsRow">
+          <img id="signImage" alt="" />
+          <h2 id="sneebleName"></h2>
+          <p id="traitsText"></p>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="row" style="align-items:center; justify-content:space-between;">
+          <div class="title" style="margin:0;">Daily Horoscopes</div>
+          <div class="row" style="gap:12px; align-items:center;">
+            <div>
+              <label>Date</label>
+              <input id="dateInput" type="date" value="2025-08-31" />
+            </div>
+            <label class="muted" style="display:flex; align-items:center; gap:6px;">
+              <input id="editToggle" type="checkbox" /> Edit horoscopes
+            </label>
+            <button id="saveBtn" class="btn" style="display:none;">Save</button>
+          </div>
+        </div>
+
+        <div id="signsGrid" class="grid grid-2" style="margin-top:12px;"></div>
+
+        <div class="row" style="margin-top: 14px;">
+          <button id="exportBtn" class="btn btn-ghost">Export this date’s horoscopes (JSON)</button>
+          <label class="btn btn-ghost" style="cursor:pointer;">
+            Import JSON
+            <input id="importFile" type="file" accept="application/json" style="display:none;" />
+          </label>
+          <button id="seedBtn" class="btn btn-ghost">Fill with friendly starter lines</button>
+        </div>
+      </section>
+
+      <section>
+        <div class="title" style="margin-bottom:10px;">Sneeble Reference</div>
+        <div id="refGrid" class="grid grid-3"></div>
+      </section>
+    </main>
+
+    <footer>© <span id="yearNow"></span> SneebleScope — made for kids by grown‑ups who believe in cozy wisdom.</footer>
+  </div>
+
+<script>
+  const SNEEBLES = [
+    { key: "sneeble1",  name: "Arctica",   img: "images/arctica.png",  traits: "Friendly, curious, and loves discovering new things." },
+    { key: "sneeble2",  name: "Bluebelle",   img: "images/bluebelle.png",  traits: "Very determined and strong willed. Dependable but also stubborn." },
+    { key: "sneeble3",  name: "Mipsy", img: "images/mipsy.png",  traits: "Plays on their cute looks, but fierce when the game is on" },
+    { key: "sneeble4",  name: "Savant",  img: "images/savant.png.svg",  traits: "Solves any pussle in 2 secs. Loves racecars and keto chocolate" },
+    { key: "sneeble5",  name: "Bear",  img: "images/bear.png",  traits: "Super fast and Sporty despite its big booty. Loves Trampolines and sand castles" },
+    { key: "sneeble6",  name: "Pine",   img: "images/pine.png",  traits: "Can reach cookies in any cabinet. Loves outdoors and playing UNO." },
+    { key: "sneeble7",  name: "Rainbow", img: "images/rainbow.png",  traits: "Energetic, sporty, and loves running around." },
+    { key: "sneeble8",  name: "Bonkers", img: "images/bonkers.png",  traits: "Organized, tidy, and loves building things." },
+    { key: "sneeble9",  name: "Snickers",  img: "images/snickers.png",  traits: "Playful and funny, always making people laugh." },
+    { key: "sneeble10", name: "Pepper",   img: "images/pepper.png", traits: "Confident, bold, and loves performing." },
+    { key: "sneeble11", name: "Feathers",img: "images/feathers.png", traits: "Loyal, caring, and a true best friend." },
+    { key: "sneeble12", name: "Teddy",img: "images/teddy.png", traits: "Cheerful, cozy, and loves sharing stories." },
+  ];
+  const BASE_YEAR = 2020;
+
+  const els = {
+    yearInput: document.getElementById('yearInput'),
+    sneeblePill: document.getElementById('sneeblePill'),
+    traitsRow: document.getElementById('traitsRow'),
+    sneebleName: document.getElementById('sneebleName'),
+    traitsText: document.getElementById('traitsText'),
+    signImage: document.getElementById('signImage'),
+    dateInput: document.getElementById('dateInput'),
+    editToggle: document.getElementById('editToggle'),
+    saveBtn: document.getElementById('saveBtn'),
+    signsGrid: document.getElementById('signsGrid'),
+    exportBtn: document.getElementById('exportBtn'),
+    importFile: document.getElementById('importFile'),
+    seedBtn: document.getElementById('seedBtn'),
+    refGrid: document.getElementById('refGrid'),
+    yearNow: document.getElementById('yearNow'),
+  };
+
+  function todayISO() {
+    const d = new Date();
+    const tzOffset = d.getTimezoneOffset();
+    const local = new Date(d.getTime() - tzOffset * 60000);
+    return local.toISOString().slice(0,10);
+  }
+
+  function getSneebleByYear(year) {
+    if (!year || isNaN(+year)) return null;
+    const idx = (((+year - BASE_YEAR) % 12) + 12) % 12;
+    return { idx, ...SNEEBLES[idx] };
+  }
+
+  function loadHoros(date) {
+    try {
+      const raw = localStorage.getItem('sneeble_horoscopes_' + date);
+      return raw ? JSON.parse(raw) : {};
+    } catch { return {}; }
+  }
+  function saveHoros(date, data) {
+    localStorage.setItem('sneeble_horoscopes_' + date, JSON.stringify(data));
+  }
+
+  function renderCurrent() {
+    const year = els.yearInput.value;
+    const s = getSneebleByYear(year);
+    if (!s) {
+      els.sneeblePill.textContent = '—';
+      els.traitsRow.style.display = 'none';
+      return;
+    }
+    els.sneeblePill.textContent = s.name;
+    els.sneebleName.textContent = s.name;
+    els.traitsText.textContent = s.traits;
+    els.signImage.src = s.img;
+
+    const horos = loadHoros(els.dateInput.value);
+    // We don't display today's text here anymore; only traits & image
+    els.traitsRow.style.display = 'block';
+  }
+
+  function renderSignsGrid() {
+    const date = els.dateInput.value;
+    const horos = loadHoros(date);
+    els.signsGrid.innerHTML = '';
+    SNEEBLES.forEach(s => {
+      const card = document.createElement('div');
+      card.className = 'sign-card';
+      const head = document.createElement('div');
+      head.className = 'sign-head';
+      const left = document.createElement('div');
+      left.className = 'sign-name';
+      left.innerHTML = '<img src="' + s.img + '" alt="" /> <div>' + s.name + '</div>';
+      const traits = document.createElement('div');
+      traits.className = 'traits';
+      traits.textContent = s.traits;
+      head.appendChild(left);
+      head.appendChild(traits);
+      card.appendChild(head);
+
+      if (els.editToggle.checked) {
+        const ta = document.createElement('textarea');
+        ta.value = horos[s.key] || '';
+        ta.placeholder = 'Write today\'s message for ' + s.name + '…';
+        ta.addEventListener('input', () => { horos[s.key] = ta.value; });
+        card.appendChild(ta);
+      } else {
+        const p = document.createElement('p');
+        p.textContent = horos[s.key] || '(No horoscope saved for this sign on this date.)';
+        card.appendChild(p);
+      }
+      els.signsGrid.appendChild(card);
+    });
+  }
+
+  function seedFriendly() {
+    const actions = ["share a snack","draw a doodle","learn a new word","help a friend","try a dance","build a fort","tell a joke","read a page","water a plant","tidy a space","take a deep breath","celebrate a tiny win"];
+    const date = els.dateInput.value;
+    const horos = loadHoros(date);
+    SNEEBLES.forEach((s, i) => { horos[s.key] = 'Today is a great day for ' + s.name + ' to ' + actions[i%12] + '!'; });
+    saveHoros(date, horos);
+    renderSignsGrid();
+  }
+
+  // Event listeners
+  els.yearInput.addEventListener('input', renderCurrent);
+  els.dateInput.addEventListener('change', renderSignsGrid);
+  els.editToggle.addEventListener('change', () => {
+    els.saveBtn.style.display = els.editToggle.checked ? 'inline-flex' : 'none';
+    renderSignsGrid();
+  });
+  els.saveBtn.addEventListener('click', () => {
+    const date = els.dateInput.value;
+    const horos = loadHoros(date);
+    document.querySelectorAll('.sign-card textarea').forEach((ta, idx) => { horos[SNEEBLES[idx].key] = ta.value; });
+    saveHoros(date, horos);
+    renderSignsGrid();
+  });
+  els.exportBtn.addEventListener('click', () => {
+    const date = els.dateInput.value;
+    const horos = loadHoros(date);
+    const blob = new Blob([JSON.stringify(horos, null, 2)], {type: 'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'sneeble_horoscopes_' + date + '.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+  els.importFile.addEventListener('change', async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const obj = JSON.parse(text);
+      if (obj && typeof obj === 'object') {
+        saveHoros(els.dateInput.value, obj);
+        renderSignsGrid();
+      }
+    } catch (err) {
+      alert('Could not read JSON. Please check the file.');
+    }
+    e.target.value = '';
+  });
+  els.seedBtn.addEventListener('click', seedFriendly);
+
+  // Initial render
+  els.yearNow.textContent = new Date().getFullYear();
+  renderSignsGrid();
+  renderCurrent();
+</script>
+</body>
+</html>
