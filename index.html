@@ -120,6 +120,59 @@
     { key: "sneeble12", name: "Teddy",img: "images/teddy.png", traits: "Cheerful, cozy, and loves sharing stories." },
   ];
   const BASE_YEAR = 2020;
+// --- Auto-generated daily horoscopes (funny + kid-friendly) ---
+// Deterministic hash from sign+date so messages change daily but are stable for the same date.
+function hashStr(s){
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+function pick(seed, arr){ return arr[seed % arr.length]; }
+
+const OPENERS = [
+  "Giggle alert!", "Quest time!", "Captain Cozy reporting!", "Superpower unlocked!",
+  "Tiny triumph incoming!", "Shiny brain day!", "Adventure sparkle!", "High-five forecast!"
+];
+const ACTIONS = [
+  "build a blanket fort", "invent a secret handshake", "draw a mini-comic",
+  "help a friend", "try a new fruit", "make a 10‑second dance",
+  "organize your treasure drawer", "learn a fun word", "read a single page",
+  "water a plant", "tell a knock‑knock joke", "practice a magic trick"
+];
+const BOOSTS = [
+  "a kind word", "a deep breath", "a wiggle break", "a sip of water",
+  "a big stretch", "a quick tidy", "a calm count to five", "your best grin"
+];
+const SNACKS = [
+  "apple slices", "pretzels", "yogurt", "carrot sticks",
+  "banana", "popcorn", "granola", "raisins", "cheese cubes"
+];
+const COLORS = [
+  "rainbow", "sunburst orange", "sky blue", "moss green",
+  "bubblegum pink", "sunny yellow", "plum purple", "ocean teal", "starlight silver"
+];
+
+// Optional: pair signs by cycle (friend sign = (idx+4)%12)
+function friendSign(idx){ return SNEEBLES[(idx + 4) % 12].name; }
+
+function generateDailyHoroscope(sign, dateStr){
+  const seed = hashStr(sign.key + "|" + dateStr);
+  const idx = sign.idx !== undefined ? sign.idx : SNEEBLES.findIndex(s => s.key === sign.key);
+  const opener = pick(seed, OPENERS);
+  const action = pick(seed * 3 + 7, ACTIONS);
+  const boost = pick(seed * 11 + 13, BOOSTS);
+  const snack = pick(seed * 17 + 19, SNACKS);
+  const color = pick(seed * 23 + 29, COLORS);
+  const luckyNumber = ((seed >>> 3) % 9) + 1;
+  const buddy = friendSign(idx);
+
+  // 2–3 playful sentences, kid‑safe
+  return `${opener} ${sign.name}s shine with ${color} vibes today. Try to ${action}; if a grumpy cloud shows up, power up with ${boost}. Lucky number: ${luckyNumber}. Bonus buddy: hang with a ${buddy} — and celebrate with ${snack}!`;
+}
+;
 
   const els = {
     yearInput: document.getElementById('yearInput'),
@@ -200,16 +253,18 @@
       card.appendChild(head);
 
       if (els.editToggle.checked) {
-        const ta = document.createElement('textarea');
-        ta.value = horos[s.key] || '';
-        ta.placeholder = 'Write today\'s message for ' + s.name + '…';
-        ta.addEventListener('input', () => { horos[s.key] = ta.value; });
-        card.appendChild(ta);
-      } else {
-        const p = document.createElement('p');
-        p.textContent = horos[s.key] || '(No horoscope saved for this sign on this date.)';
-        card.appendChild(p);
-      }
+  const ta = document.createElement('textarea');
+  ta.value = horos[s.key] || generateDailyHoroscope(s, date);
+  ta.placeholder = 'Write today\'s message for ' + s.name + '…';
+  ta.addEventListener('input', () => { horos[s.key] = ta.value; });
+  card.appendChild(ta);
+} else {
+  const p = document.createElement('p');
+  const autoText = generateDailyHoroscope(s, date);
+  p.textContent = (horos[s.key] && horos[s.key].trim()) ? horos[s.key] : autoText;
+  card.appendChild(p);
+}
+
       els.signsGrid.appendChild(card);
     });
   }
