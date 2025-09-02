@@ -66,6 +66,8 @@
           <img id="signImage" alt="" />
           <h2 id="sneebleName"></h2>
           <p id="traitsText"></p>
+          <div class="muted" style="margin-top:10px;">Today’s horoscope</div>
+          <p id="currentHoro" class="sign-text"></p>
         </div>
       </section>
 
@@ -203,7 +205,8 @@
     dateInput: document.getElementById('dateInput'),
     signsGrid: document.getElementById('signsGrid'),
     refGrid: document.getElementById('refGrid'),
-    yearNow: document.getElementById('yearNow'),
+    yearNow: document.getElementById('yearNow'),,
+    currentHoro: document.getElementById('currentHoro')
   };
 
   function renderCurrent() {
@@ -214,14 +217,19 @@
     els.sneebleName.textContent = s.name;
     els.traitsText.textContent = s.traits;
     els.signImage.src = s.img;
+    // Set today's horoscope under the description
+    const dateNow = els.dateInput && els.dateInput.value ? els.dateInput.value : todayISO();
+    if (els.currentHoro) { els.currentHoro.textContent = generateDailyHoroscope(s, dateNow); }
     els.traitsRow.style.display = 'block';
   }
 
   function renderSignsGrid() {
-    const date = els.dateInput.value || todayISO();
+    const cur = getSneebleByYear(els.yearInput.value);
+const date = els.dateInput.value || todayISO();
     els.signsGrid.innerHTML = '';
     SNEEBLES.forEach(s => {
-      const card = document.createElement('div');
+      if (cur && s.key === cur.key) { return; }  // skip the selected Sneeble up top
+    const card = document.createElement('div');
       card.className = 'sign-card';
       const head = document.createElement('div');
       head.className = 'sign-head';
@@ -261,7 +269,7 @@
   els.yearNow.textContent = new Date().getFullYear();
   if (!els.dateInput.value) els.dateInput.value = todayISO();
   els.yearInput.addEventListener('input', renderCurrent);
-  els.dateInput.addEventListener('change', renderSignsGrid);
+  els.dateInput.addEventListener('change', () => { renderSignsGrid(); renderCurrent(); });
 
   renderSignsGrid();
   renderCurrent();
