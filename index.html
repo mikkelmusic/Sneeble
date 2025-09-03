@@ -76,7 +76,8 @@
           <div style="display:flex; gap:12px; align-items:center;">
             <div style="min-width:200px;">
               <label>Date</label>
-              <input id="dateInput" type="date" value="2025-09-02" />
+              <!-- removed hardcoded value -->
+              <input id="dateInput" type="date" />
             </div>
           </div>
         </div>
@@ -248,28 +249,39 @@
     });
   }
 
-  function scheduleMidnightRefresh() {
+  function msUntilNextLocalMidnight() {
     const now = new Date();
     const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate()+1, 0, 0, 1);
-    const ms = midnight - now;
+    return midnight - now;
+  }
+
+  function scheduleMidnightRefresh() {
+    const ms = msUntilNextLocalMidnight();
     setTimeout(() => {
-      if (!els.dateInput.value || els.dateInput.value === todayISO()) {
-        els.dateInput.value = todayISO();
-        renderSignsGrid();
-        renderCurrent();
-      }
+      // Always advance to today's date at local midnight and re-render
+      els.dateInput.value = todayISO();
+      renderSignsGrid();
+      renderCurrent();
+      // schedule the next midnight refresh
       scheduleMidnightRefresh();
     }, ms);
   }
 
   // Init
   els.yearNow && (els.yearNow.textContent = new Date().getFullYear());
-  if (!els.dateInput.value) els.dateInput.value = todayISO();
+
+  // Always start on today's date (overrides any stale value from cached HTML)
+  els.dateInput.value = todayISO();
+
+  // Listeners
   els.yearInput.addEventListener('input', () => { renderCurrent(); renderSignsGrid(); });
   els.dateInput.addEventListener('change', () => { renderSignsGrid(); renderCurrent(); });
 
+  // Initial render
   renderSignsGrid();
   renderCurrent();
+
+  // Auto-advance at midnight local time
   scheduleMidnightRefresh();
 </script>
 </body>
